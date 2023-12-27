@@ -46,7 +46,7 @@ export const signin = async (req, res, next) => {
     if (!validPassword) return next(errorHandler(401, 'Wrong credentials!'))
 
     // GENERATE A JSON WEB TOKEN (JWT) USING THE USER'S ID AND THE SECRET KEY
-    const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET)
+    const token = jwt.sign({ id: validUser._id }, 'hvdsgvyuwtwdyutbvas')
 
     // EXTRACT THE PASSWORD FIELD FROM THE USER DOCUMENT (EXCLUDING IT) AND SEND THE REMAINING DATA IN THE RESPONSE
     const { password: pass, ...rest } = validUser._doc
@@ -55,7 +55,7 @@ export const signin = async (req, res, next) => {
     res
       .cookie('access_token', token, { httpOnly: true })
       .status(200)
-      .json({ rest, token })
+      .json({ ...rest, token })
   } catch (error) {
     // IF AN ERROR OCCURS DURING THE PROCESS, PASS THE ERROR TO THE ERROR-HANDLING MIDDLEWARE
     next(error)

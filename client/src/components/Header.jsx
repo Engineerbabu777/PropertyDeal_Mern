@@ -1,10 +1,14 @@
 import { FaSearch } from 'react-icons/fa'
 import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux';
 
 export default function Header () {
+  const { currentUser } = useSelector((state) => state.user);
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate()
+
+  console.log({currentUser})
 
   const handleSubmit = e => {
     e.preventDefault()
@@ -44,7 +48,15 @@ export default function Header () {
             </li>
           </Link>
           <Link to='/profile'>
-            <li className=' text-slate-700 hover:text-slate-400 font-semibold'> Sign in</li>
+            {currentUser ? (
+              <img
+                className='rounded-full h-7 w-7 object-cover'
+                src={currentUser?.avatar}
+                alt='profile'
+              />
+            ) : (
+              <li className=' text-slate-700 hover:underline'> Sign in</li>
+            )}
           </Link>
         </ul>
       </div>
