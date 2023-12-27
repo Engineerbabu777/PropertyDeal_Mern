@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.signin = exports.signup = void 0;
+exports.signOut = exports.google = exports.signin = exports.signup = void 0;
 
 var _userModel = _interopRequireDefault(require("../models/user.model.js"));
 
@@ -27,9 +27,9 @@ var signup = function signup(req, res, next) {
       switch (_context.prev = _context.next) {
         case 0:
           // DESTRUCTURE USERNAME, EMAIL, AND PASSWORD FROM THE REQUEST BODY
-          _req$body = req.body, username = _req$body.username, email = _req$body.email, password = _req$body.password; // HASH THE USER'S PASSWORD USING BCRYPT WITH A SALT FACTOR OF 10
+          _req$body = req.body, username = _req$body.username, email = _req$body.email, password = _req$body.password; // HASH THE USER'S PASSWORD USING BCRYPT
 
-          hashedPassword = _bcryptjs["default"].hashSync(password, 10); // CREATE A NEW USER INSTANCE WITH THE PROVIDED USERNAME, EMAIL, AND HASHED PASSWORD
+          hashedPassword = _bcryptjs["default"].hashSync(password, 10); //CREATE A NEW USER INSTANCE WITH THE PROVIDED USERNAME, EMAIL, AND HASHED PASSWORD
 
           newUser = new _userModel["default"]({
             username: username,
@@ -42,7 +42,7 @@ var signup = function signup(req, res, next) {
 
         case 6:
           user = _context.sent;
-          console.log(user); // IF SUCCESSFUL, SEND A 201 CREATED STATUS AND A JSON RESPONSE INDICATING SUCCESS
+          console.log(user); // IF SUCCESSFUL, SEND A 201 CREATED STATUS AND A JSON RESPONSE
 
           res.status(201).json('User created successfully!');
           _context.next = 14;
@@ -111,7 +111,10 @@ var signin = function signin(req, res, next) {
 
           res.cookie('access_token', token, {
             httpOnly: true
-          }).status(200).json(rest);
+          }).status(200).json({
+            rest: rest,
+            token: token
+          });
           _context2.next = 18;
           break;
 
@@ -127,6 +130,108 @@ var signin = function signin(req, res, next) {
       }
     }
   }, null, null, [[1, 15]]);
-};
+}; // GOOGLE SIGN-IN HANDLER
+
 
 exports.signin = signin;
+
+var google = function google(req, res, next) {
+  var user, token, _user$_doc, pass, rest, generatedPassword, hashedPassword, newUser, _token, _newUser$_doc, _pass, _rest;
+
+  return regeneratorRuntime.async(function google$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          _context3.next = 3;
+          return regeneratorRuntime.awrap(_userModel["default"].findOne({
+            email: req.body.email
+          }));
+
+        case 3:
+          user = _context3.sent;
+
+          if (!user) {
+            _context3.next = 10;
+            break;
+          }
+
+          token = _jsonwebtoken["default"].sign({
+            id: user._id
+          }, process.env.JWT_SECRET);
+          _user$_doc = user._doc, pass = _user$_doc.password, rest = _objectWithoutProperties(_user$_doc, ["password"]);
+          res.cookie('access_token', token, {
+            httpOnly: true
+          }).status(200).json(rest);
+          _context3.next = 18;
+          break;
+
+        case 10:
+          // IF USER DOES NOT EXIST, GENERATE A RANDOM PASSWORD AND CREATE A NEW USER
+          generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+          hashedPassword = _bcryptjs["default"].hashSync(generatedPassword, 10);
+          newUser = new _userModel["default"]({
+            // CREATE A UNIQUE USERNAME BASED ON NAME AND RANDOM STRING
+            username: req.body.name.split(' ').join('').toLowerCase() + Math.random().toString(36).slice(-4),
+            email: req.body.email,
+            password: hashedPassword,
+            avatar: req.body.photo
+          }); // SAVE THE NEW USER TO THE DATABASE
+
+          _context3.next = 15;
+          return regeneratorRuntime.awrap(newUser.save());
+
+        case 15:
+          // GENERATE A JWT TOKEN FOR THE NEW USER AND SEND USER DATA IN RESPONSE
+          _token = _jsonwebtoken["default"].sign({
+            id: newUser._id
+          }, process.env.JWT_SECRET);
+          _newUser$_doc = newUser._doc, _pass = _newUser$_doc.password, _rest = _objectWithoutProperties(_newUser$_doc, ["password"]);
+          res.cookie('access_token', _token, {
+            httpOnly: true
+          }).status(200).json(_rest);
+
+        case 18:
+          _context3.next = 23;
+          break;
+
+        case 20:
+          _context3.prev = 20;
+          _context3.t0 = _context3["catch"](0);
+          // IF AN ERROR OCCURS DURING THE PROCESS, PASS THE ERROR TO THE ERROR-HANDLING MIDDLEWARE
+          next(_context3.t0);
+
+        case 23:
+        case "end":
+          return _context3.stop();
+      }
+    }
+  }, null, null, [[0, 20]]);
+}; // SIGN OUT HANDLER
+
+
+exports.google = google;
+
+var signOut = function signOut(req, res, next) {
+  return regeneratorRuntime.async(function signOut$(_context4) {
+    while (1) {
+      switch (_context4.prev = _context4.next) {
+        case 0:
+          try {
+            // CLEAR THE 'ACCESS_TOKEN' COOKIE TO LOG OUT THE USER
+            res.clearCookie('access_token');
+            res.status(200).json('User has been logged out!');
+          } catch (error) {
+            // IF AN ERROR OCCURS DURING THE PROCESS, PASS THE ERROR TO THE ERROR-HANDLING MIDDLEWARE
+            next(error);
+          }
+
+        case 1:
+        case "end":
+          return _context4.stop();
+      }
+    }
+  });
+};
+
+exports.signOut = signOut;

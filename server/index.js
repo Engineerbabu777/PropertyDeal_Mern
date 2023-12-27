@@ -3,7 +3,8 @@ import mongoose from 'mongoose'
 import * as dotenv from 'dotenv'
 import { databaseConnect } from './connectDb.js'
 import cookieParser from 'cookie-parser'
-
+import cors from 'cors';
+import authRouter from './routes/auth.routes.js';
 // FOR USING ENV VARAIBLES!
 dotenv.config()
 
@@ -12,6 +13,7 @@ const app = express()
 
 app.use(express.json())
 app.use(cookieParser())
+app.use(cors())
 
 
 // CONNECTING TO DATABASE!
@@ -21,7 +23,7 @@ databaseConnect()
 app.use('/api/auth', authRouter)
 
 // RUNNING OUR SERVER!
-app.listen(3000, () => {
+app.listen(4444, () => {
   console.log('Listening on Port: 3000!!!!')
 })
 
