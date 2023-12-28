@@ -60,7 +60,7 @@ export default function Search () {
         { headers: { authorization: currentUser.token } }
       )
       const data = await res.json()
-      if (data.length > 8) {
+      if (data.length > 0) {
         setShowMore(true)
       } else {
         setShowMore(false)

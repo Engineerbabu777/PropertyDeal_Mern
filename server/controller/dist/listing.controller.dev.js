@@ -206,7 +206,7 @@ var getListings = function getListings(req, res, next) {
       switch (_context5.prev = _context5.next) {
         case 0:
           _context5.prev = 0;
-          limit = parseInt(req.query.limit) || 9;
+          limit = parseInt(req.query.limit) || 1;
           startIndex = parseInt(req.query.startIndex) || 0;
           offer = req.query.offer;
 
