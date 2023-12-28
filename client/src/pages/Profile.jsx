@@ -142,6 +142,7 @@ export default function Profile () {
         return
       }
       dispatch(deleteUserSuccess(data))
+      removeCookie(['token_turk'])
     } catch (error) {
       dispatch(deleteUserFailure(error.message))
     }
