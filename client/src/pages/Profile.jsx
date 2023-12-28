@@ -20,6 +20,7 @@ import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { MdDelete } from 'react-icons/md'
 import { CiLogout } from 'react-icons/ci'
+import { useCookies } from 'react-cookie'
 
 export default function Profile () {
   const fileRef = useRef(null)
@@ -32,6 +33,7 @@ export default function Profile () {
   const [showListingsError, setShowListingsError] = useState(false)
   const [userListings, setUserListings] = useState([])
   const dispatch = useDispatch()
+  const [cookies, setCookie, removeCookie] = useCookies(['token_turk'])
 
   /*
   // firebase storage
@@ -82,7 +84,8 @@ export default function Profile () {
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            authorization: currentUser.token
           },
           body: JSON.stringify(formData)
         }
@@ -93,7 +96,12 @@ export default function Profile () {
         return
       }
 
-      dispatch(updateUserSuccess(data))
+      const new2 = {
+        ...data,
+        token: cookies['token_turk']
+      }
+
+      dispatch(updateUserSuccess(new2))
       setUpdateSuccess(true)
     } catch (error) {
       dispatch(updateUserFailure(error.message))
@@ -106,7 +114,10 @@ export default function Profile () {
       const res = await fetch(
         `http://localhost:4444/api/user/delete/${currentUser._id}`,
         {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: {
+            authorization: currentUser.token
+          }
         }
       )
       const data = await res.json()
@@ -114,6 +125,7 @@ export default function Profile () {
         dispatch(deleteUserFailure(data.message))
         return
       }
+      removeCookie(['token_turk'])
       dispatch(deleteUserSuccess(data))
     } catch (error) {
       dispatch(deleteUserFailure(error.message))

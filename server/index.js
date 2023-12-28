@@ -5,6 +5,8 @@ import { databaseConnect } from './connectDb.js'
 import cookieParser from 'cookie-parser'
 import cors from 'cors';
 import authRouter from './routes/auth.routes.js';
+import userRouter from './routes/user.routes.js';
+
 // FOR USING ENV VARAIBLES!
 dotenv.config()
 
@@ -21,6 +23,8 @@ databaseConnect()
 
 // API ROUTES!
 app.use('/api/auth', authRouter)
+app.use('/api/user', userRouter)
+
 
 // RUNNING OUR SERVER!
 app.listen(4444, () => {

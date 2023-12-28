@@ -113,7 +113,7 @@ export const google = async (req, res, next) => {
 export const signOut = async (req, res, next) => {
   try {
     // CLEAR THE 'ACCESS_TOKEN' COOKIE TO LOG OUT THE USER
-    res.clearCookie('access_token')
+    res.clearCookie('token_turk')
     res.status(200).json('User has been logged out!')
   } catch (error) {
     // IF AN ERROR OCCURS DURING THE PROCESS, PASS THE ERROR TO THE ERROR-HANDLING MIDDLEWARE

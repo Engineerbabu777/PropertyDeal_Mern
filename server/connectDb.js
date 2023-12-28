@@ -7,7 +7,7 @@ export const databaseConnect = async () => {
     return mongoose.connection.asPromise()
   } else {
     return mongoose
-      .connect(process.env.MONGO_URI || "mongodb+srv://awaismumtaz0099:25213291231919@cluster0.3so1bcq.mongodb.net/realState")
+      .connect(process.env.MONGO_URI)
       .then(() => console.log('Database Connected')).catch((err) => console.log(err))
   }
 }
