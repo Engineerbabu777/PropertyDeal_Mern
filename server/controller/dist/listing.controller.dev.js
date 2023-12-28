@@ -3,13 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getListing = exports.updateListing = exports.deleteListing = exports.createListing = void 0;
+exports.getListings = exports.getListing = exports.updateListing = exports.deleteListing = exports.createListing = void 0;
 
 var _listingModel = _interopRequireDefault(require("../models/listing.model.js"));
 
 var _error = require("../utils/error.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var createListing = function createListing(req, res, next) {
   var listing;
@@ -196,3 +198,78 @@ var getListing = function getListing(req, res, next) {
 };
 
 exports.getListing = getListing;
+
+var getListings = function getListings(req, res, next) {
+  var limit, startIndex, offer, furnished, parking, type, searchTerm, sort, order, listings;
+  return regeneratorRuntime.async(function getListings$(_context5) {
+    while (1) {
+      switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.prev = 0;
+          limit = parseInt(req.query.limit) || 9;
+          startIndex = parseInt(req.query.startIndex) || 0;
+          offer = req.query.offer;
+
+          if (offer === undefined || offer === 'false') {
+            offer = {
+              $in: [false, true]
+            };
+          }
+
+          furnished = req.query.furnished;
+
+          if (furnished === undefined || furnished === 'false') {
+            furnished = {
+              $in: [false, true]
+            };
+          }
+
+          parking = req.query.parking;
+
+          if (parking === undefined || parking === 'false') {
+            parking = {
+              $in: [false, true]
+            };
+          }
+
+          type = req.query.type;
+
+          if (type === undefined || type === 'all') {
+            type = {
+              $in: ['sale', 'rent']
+            };
+          }
+
+          searchTerm = req.query.searchTerm || '';
+          sort = req.query.sort || 'createdAt';
+          order = req.query.order || 'desc';
+          _context5.next = 16;
+          return regeneratorRuntime.awrap(_listingModel["default"].find({
+            name: {
+              $regex: searchTerm,
+              $options: 'i'
+            },
+            offer: offer,
+            furnished: furnished,
+            parking: parking,
+            type: type
+          }).sort(_defineProperty({}, sort, order)).limit(limit).skip(startIndex));
+
+        case 16:
+          listings = _context5.sent;
+          return _context5.abrupt("return", res.status(200).json(listings));
+
+        case 20:
+          _context5.prev = 20;
+          _context5.t0 = _context5["catch"](0);
+          next(_context5.t0);
+
+        case 23:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, null, null, [[0, 20]]);
+};
+
+exports.getListings = getListings;
