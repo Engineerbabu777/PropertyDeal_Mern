@@ -1,6 +1,7 @@
 import bcryptjs from 'bcryptjs'
 import User from '../models/user.model.js'
 import { errorHandler } from '../utils/error.js'
+import Listing from '../models/listing.model.js'
 
 // UPDATE USER ROUTE HANDLER
 export const updateUser = async (req, res, next) => {
@@ -57,3 +58,44 @@ export const deleteUser = async (req, res, next) => {
     next(error)
   }
 }
+
+
+
+// GET LISTINGS BELONGING TO A SPECIFIC USER
+export const getUserListings = async (req, res, next) => {
+    // Check if the requesting user is the same as the requested user
+    if (req.user.id === req.params.id) {
+      try {
+        // Attempt to find listings associated with the specified user ID
+        const listings = await Listing.find({ userRef: req.params.id });
+        // Respond with the found listings
+        res.status(200).json(listings);
+      } catch (error) {
+        // Handle errors by passing them to the next middleware
+        next(error);
+      }
+    } else {
+      // Respond with a 401 Unauthorized error if the requesting user is not the same as the requested user
+      return next(errorHandler(401, 'You can only view your own listings!'));
+    }
+  };
+  
+  // GET USER INFORMATION BY ID
+  export const getUser = async (req, res, next) => {
+    try {
+      // Attempt to find the user by ID
+      const user = await User.findById(req.params.id);
+    
+      // Check if the user exists
+      if (!user) return next(errorHandler(404, 'User not found!'));
+    
+      // Exclude the password field from the user data
+      const { password: pass, ...rest } = user._doc;
+    
+      // Respond with the user information (excluding password)
+      res.status(200).json(rest);
+    } catch (error) {
+      // Handle errors by passing them to the next middleware
+      next(error);
+    }
+  };

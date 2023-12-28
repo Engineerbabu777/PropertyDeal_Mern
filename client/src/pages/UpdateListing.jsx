@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   getDownloadURL,
   getStorage,
@@ -7,11 +7,13 @@ import {
 } from 'firebase/storage'
 import { app } from '../firebase'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { MdDelete } from 'react-icons/md'
+
 export default function CreateListing () {
   const { currentUser } = useSelector(state => state.user)
   const navigate = useNavigate()
+  const params = useParams()
   const [files, setFiles] = useState([])
   const [formData, setFormData] = useState({
     imageUrls: [],
@@ -31,7 +33,25 @@ export default function CreateListing () {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(false)
-  console.log(formData)
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      const listingId = params.listingId
+      const res = await fetch(
+        `http://localhost:4444/api/listing/get/${listingId}`,
+        { headers: { authorization: currentUser.token } }
+      )
+      const data = await res.json()
+      if (data.success === false) {
+        console.log(data.message)
+        return
+      }
+      setFormData(data)
+    }
+
+    fetchListing()
+  }, [])
+
   const handleImageSubmit = e => {
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
       setUploading(true)
@@ -132,17 +152,20 @@ export default function CreateListing () {
         return setError('Discount price must be lower than regular price')
       setLoading(true)
       setError(false)
-      const res = await fetch('http://localhost:4444/api/listing/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          authorization: currentUser.token
-        },
-        body: JSON.stringify({
-          ...formData,
-          userRef: currentUser._id
-        })
-      })
+      const res = await fetch(
+        `http://localhost:4444/api/listing/update/${params.listingId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: currentUser.token
+          },
+          body: JSON.stringify({
+            ...formData,
+            userRef: currentUser._id
+          })
+        }
+      )
       const data = await res.json()
       setLoading(false)
       if (data.success === false) {
@@ -157,7 +180,7 @@ export default function CreateListing () {
   return (
     <main className='p-3 max-w-4xl mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>
-        Create a Listing
+        Update a Listing
       </h1>
       <form onSubmit={handleSubmit} className='flex flex-col sm:flex-row gap-4'>
         <div className='flex flex-col gap-4 flex-1'>
@@ -301,7 +324,6 @@ export default function CreateListing () {
                 />
                 <div className='flex flex-col items-center'>
                   <p>Discounted price</p>
-
                   {formData.type === 'rent' && (
                     <span className='text-xs'>($ / month)</span>
                   )}
@@ -342,7 +364,7 @@ export default function CreateListing () {
             formData.imageUrls.map((url, index) => (
               <div
                 key={url}
-                className='flex justify-between p-3 border items-center border-gray-500 rounded-sm'
+                className='flex justify-between p-3 border items-center'
               >
                 <img
                   src={url}
@@ -352,18 +374,18 @@ export default function CreateListing () {
                 <button
                   type='button'
                   onClick={() => handleRemoveImage(index)}
-                  className='p-2 text-red-700 rounded-lg uppercase hover:opacity-75 flex gap-2 bg-red-300 text-red-700'
+                  className='p-3 text-red-700 rounded-lg uppercase hover:opacity-75 flex gap-2 bg-red-200'
                 >
-                  <MdDelete className='w-7 h-7' />
+                  <MdDelete className='w-6 h-6' />
                   Delete
                 </button>
               </div>
             ))}
           <button
             disabled={loading || uploading}
-            className='p-3 bg-slate-300 text-black font-semibold rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
+            className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
           >
-            {loading ? 'Creating...' : 'Create listing'}
+            {loading ? 'Updating...' : 'Update listing'}
           </button>
           {error && <p className='text-red-700 text-sm'>{error}</p>}
         </div>

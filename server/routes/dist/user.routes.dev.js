@@ -17,5 +17,7 @@ var router = _express["default"].Router();
 
 router.post('/update/:id', _verifyUser.verifyToken, _userController.updateUser);
 router["delete"]('/delete/:id', _verifyUser.verifyToken, _userController.deleteUser);
+router.get('/listings/:id', _verifyUser.verifyToken, _userController.getUserListings);
+router.get('/:id', _verifyUser.verifyToken, _userController.getUser);
 var _default = router;
 exports["default"] = _default;

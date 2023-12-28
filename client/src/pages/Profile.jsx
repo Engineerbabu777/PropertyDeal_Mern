@@ -19,6 +19,7 @@ import {
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { MdDelete } from 'react-icons/md'
+import { MdEdit } from 'react-icons/md'
 import { CiLogout } from 'react-icons/ci'
 import { useCookies } from 'react-cookie'
 
@@ -152,7 +153,12 @@ export default function Profile () {
     try {
       setShowListingsError(false)
       const res = await fetch(
-        `http://localhost:4444/api/user/listings/${currentUser._id}`
+        `http://localhost:4444/api/user/listings/${currentUser._id}`,
+        {
+          headers: {
+            authorization: currentUser.token
+          }
+        }
       )
       const data = await res.json()
       if (data.success === false) {
@@ -171,7 +177,10 @@ export default function Profile () {
       const res = await fetch(
         `http://localhost:4444/api/listing/delete/${listingId}`,
         {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: {
+            authorization: currentUser.token
+          }
         }
       )
       const data = await res.json()
@@ -303,15 +312,19 @@ export default function Profile () {
                 <p>{listing.name}</p>
               </Link>
 
-              <div className='flex flex-col item-center'>
+              <div className='flex flex-col item-center flex flex-col gap-1'>
                 <button
                   onClick={() => handleListingDelete(listing._id)}
-                  className='text-red-700 uppercase'
+                  className='text-red-700 uppercase flex gap-2 bg-red-200 rounded-md w-[100px] p-1'
                 >
+                  <MdDelete className='w-6 h-6' />
                   Delete
                 </button>
                 <Link to={`/update-listing/${listing._id}`}>
-                  <button className='text-green-700 uppercase'>Edit</button>
+                  <button className='text-green-700 uppercase flex gap-2 bg-green-200 rounded-md w-[100px] p-1'>
+                    <MdEdit className='w-6 h-6' />
+                    Edit
+                  </button>
                 </Link>
               </div>
             </div>
